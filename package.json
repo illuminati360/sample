@@ -1,0 +1,21 @@
+{
+  "name": "sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/server.js",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "node ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
+    "eslint": "^7.17.0",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "@microsoft/mixed-reality-extension-sdk": "^0.20.0"
+  }
+}
