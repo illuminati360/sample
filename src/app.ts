@@ -1,45 +1,74 @@
-import * as MRE from '@microsoft/mixed-reality-extension-sdk';
+import { Actor, AlphaMode, AssetContainer, ColliderType, CollisionLayer, Color3, Color4, Context, Guid, ParameterSet, User } from '@microsoft/mixed-reality-extension-sdk';
 
-const BOX_DIMENSIONS = {width: 0.4, height: 0.4, depth: 0.4}
+const layers: {[n: number]: (string | CollisionLayer)}= {
+    0:  CollisionLayer.Default,
+    1:  CollisionLayer.Hologram,
+    5:  CollisionLayer.UI,
+    14: CollisionLayer.Navigation,
+    18: "artifact:1669952407167041968"
+};
 
 export default class SampleApp {
-    private assets: MRE.AssetContainer 
-    private triggers: Map<MRE.Guid, MRE.Actor>;
+    private assets: AssetContainer 
+    private triggers: Map<Guid, Actor>;
     // constructor
-	constructor(private context: MRE.Context, private params: MRE.ParameterSet) {
-        this.triggers = new Map<MRE.Guid, MRE.Actor>();
-        this.assets = new MRE.AssetContainer(this.context);
+	constructor(private context: Context, private params: ParameterSet) {
+        this.triggers = new Map<Guid, Actor>();
+        this.assets = new AssetContainer(this.context);
 
         this.context.onUserJoined(user => this.userjoined(user));
         this.context.onUserLeft(user => this.userLeft(user));
     }
     
-    private userjoined (user: MRE.User) {
+    private userjoined (user: User) {
         const transMat = this.assets.createMaterial('trans_red', {
-            color: MRE.Color4.FromColor3(MRE.Color3.Red(), 0.1), alphaMode: MRE.AlphaMode.Blend
+            color: Color4.FromColor3(Color3.Red(), 0.1), alphaMode: AlphaMode.Blend
         });
-        this.triggers.set(user.id, MRE.Actor.Create(this.context, {
-            actor: {
-                name: "trigger",
-                appearance: {
-                    meshId: this.assets.createBoxMesh('trigger', BOX_DIMENSIONS.width, BOX_DIMENSIONS.height, BOX_DIMENSIONS.depth).id,
-                    materialId: transMat.id
-                },
-                transform: {
-                    local: { position: {x:0, y:0, z:0} }
-                },
-                collider: {
-                    geometry: { shape: MRE.ColliderType.Auto },
-                    layer: MRE.CollisionLayer.Hologram
-                },
-                attachment: {
-                    attachPoint: "spine-bottom",
-                    userId: user.id
+        const size = this.params.size ? parseFloat(this.params.size as string) : 0.4;
+        const pos = this.params.pos ? parseFloat(this.params.pos as string) : 0;
+        const layer = layers[ this.params.layer ? parseInt(this.params.layer as string) : 0 ];
+
+        // not supported
+        if (layer === undefined) { return; }
+
+        let actor: Actor;
+        if (Object.values(CollisionLayer).includes(layer as CollisionLayer)){
+            actor = Actor.Create(this.context, {
+                actor: {
+                    appearance: {
+                        meshId: this.assets.createBoxMesh('trigger', size, size, size).id,
+                        materialId: transMat.id
+                    },
+                    transform: {
+                        local: { position: {x: 0, y: pos, z: 0} }
+                    },
+                    collider: {
+                        geometry: { shape: ColliderType.Auto },
+                        layer: layer as CollisionLayer
+                    },
+                    attachment: {
+                        attachPoint: "spine-middle",
+                        userId: user.id
+                    }
                 }
-            }
-        }));
+            });
+        }else{
+            actor = Actor.CreateFromLibrary(this.context, {
+                resourceId: layer,
+                actor: {
+                    transform: {
+                        local: { position: {x: 0, y: pos, z: 0} }
+                    },
+                    attachment: {
+                        attachPoint: "spine-middle",
+                        userId: user.id
+                    }
+                }
+            });
+        }
+        this.triggers.set(user.id, actor);
     }
-    private userLeft (user: MRE.User) {
+    private userLeft (user: User) {
         this.triggers.get(user.id)?.destroy();
     }
 }
