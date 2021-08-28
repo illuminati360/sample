@@ -5,7 +5,8 @@ const layers: {[n: number]: (string | CollisionLayer)}= {
     1:  CollisionLayer.Hologram,
     5:  CollisionLayer.UI,
     14: CollisionLayer.Navigation,
-    18: "artifact:1669952407167041968"
+    // 18: "artifact:1669952407167041968"
+    18: "artifact:1813545044632666976"
 };
 
 export default class SampleApp {
@@ -26,7 +27,8 @@ export default class SampleApp {
         });
         const size = this.params.size ? parseFloat(this.params.size as string) : 0.4;
         const pos = this.params.pos ? parseFloat(this.params.pos as string) : 0;
-        const layer = layers[ this.params.layer ? parseInt(this.params.layer as string) : 0 ];
+        let layer = layers[ this.params.layer ? parseInt(this.params.layer as string) : 0 ];
+        layer = this.params.artifactId ? this.params.artifactId : layer;
 
         // not supported
         if (layer === undefined) { return; }
