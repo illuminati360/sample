@@ -28,7 +28,7 @@ export default class SampleApp {
         const size = this.params.size ? parseFloat(this.params.size as string) : 0.4;
         const pos = this.params.pos ? parseFloat(this.params.pos as string) : 0;
         let layer = layers[ this.params.layer ? parseInt(this.params.layer as string) : 0 ];
-        layer = this.params.artifactId ? this.params.artifactId : layer;
+        layer = this.params.artifactId ? this.params.artifactId as string : layer;
 
         // not supported
         if (layer === undefined) { return; }
